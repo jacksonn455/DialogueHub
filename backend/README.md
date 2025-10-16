@@ -32,6 +32,7 @@ A robust, scalable real-time chat API built with Node.js and NestJS, featuring W
 - **Logging:** Built-in NestJS Logger with structured output
 - **Monitoring:** Monitoring and observability features powered by New Relic
 - **API Documentation:** Swagger/OpenAPI documentation that provides interactive exploration of endpoints
+  ![](https://github.com/jacksonn455/DialogueHub/blob/main/images/doc.png)
 - **Development:** Nodemon, TypeScript compiler
 - **Package Management:** npm
 
