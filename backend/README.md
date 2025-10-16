@@ -12,6 +12,7 @@ A robust, scalable real-time chat API built with Node.js and NestJS, featuring W
 - **Monitoring**: New Relic APM integration for performance tracking
 - **Scalable Architecture**: Microservices-ready design with asynchronous processing
 - **Comprehensive Testing:** Unit and integration tests with Jest for reliable codebase
+- **Stress & Load Testing:** K6 for performance, load, and stress testing 
 
 ## Tech Stack
 
@@ -79,12 +80,6 @@ NEW_RELIC_LICENSE_KEY=your_license_key
 ```bash
 # Development mode with hot-reload
 npm run start:dev
-
-# Production mode
-npm run start:prod
-
-# Debug mode
-npm run start:debug
 ```
 
 The API will be available at `http://localhost:3000`
@@ -94,9 +89,6 @@ The API will be available at `http://localhost:3000`
 ```bash
 # Start all services (MongoDB, Redis, RabbitMQ)
 docker-compose up -d
-
-# View logs
-docker-compose logs -f
 ```
 
 ## API Documentation
@@ -197,18 +189,6 @@ src/
 - Concurrent Users: 10,000+ simultaneous connections
 - Message Throughput: 50,000+ messages/minute
 - Cache Hit Rate: 95%+ for active chats
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
-
-## License
-
-This project is licensed under the MIT License.
 
 ## Author
 
