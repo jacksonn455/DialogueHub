@@ -5,14 +5,20 @@ A robust, scalable real-time chat API built with Node.js and NestJS, featuring W
 ## Features
 
 - **Real-Time Communication**: WebSocket-based instant messaging with Socket.IO
+- **MongoDB**: NoSQL capabilities to deliver powerful schema flexibility and high performance for real-time chat applications.
+   ![](https://github.com/jacksonn455/DialogueHub/blob/main/images/mongo.png)
 - **Message Management**: Full CRUD operations with replies, editing, and deletion
 - **User Presence**: Real-time online/offline status tracking
 - **Message Queue**: RabbitMQ integration for background processing
+   ![](https://github.com/jacksonn455/DialogueHub/blob/main/images/rabbit.png)
 - **Caching Layer**: Redis for high-performance message delivery
 - **Monitoring**: New Relic APM integration for performance tracking
+   ![](https://github.com/jacksonn455/DialogueHub/blob/main/images/newrelic.png)
 - **Scalable Architecture**: Microservices-ready design with asynchronous processing
 - **Comprehensive Testing:** Unit and integration tests with Jest for reliable codebase
-- **Stress & Load Testing:** K6 for performance, load, and stress testing 
+  ![](https://github.com/jacksonn455/DialogueHub/blob/main/images/test.png)
+- **Stress & Load Testing:** K6 for performance, load, and stress testing
+  ![](https://github.com/jacksonn455/DialogueHub/blob/main/images/load-stress.png)
 
 ## Tech Stack
 
