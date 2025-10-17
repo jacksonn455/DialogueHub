@@ -1,21 +1,20 @@
-
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../hooks/useAuth';
-import { useChat } from '../../hooks/useChat';
-import { Search, LogOut, MessageSquare, Plus } from 'lucide-react';
-import ChatList from '../Chat/ChatList';
-import Avatar from '../Common/Avatar';
-import './Sidebar.css';
+import React, { useEffect, useState } from "react";
+import { useAuth } from "../../hooks/useAuth";
+import { useChat } from "../../hooks/useChat";
+import { Search, LogOut, Plus } from "lucide-react";
+import ChatList from "../Chat/ChatList";
+import Avatar from "../Common/Avatar";
+import "./Sidebar.css";
 
 const Sidebar = () => {
   const { user, logout } = useAuth();
   const { chats, loadChats, activeChat, joinChat } = useChat();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [filteredChats, setFilteredChats] = useState([]);
 
   useEffect(() => {
     loadChats();
-  }, []);
+  }, [loadChats]);
 
   useEffect(() => {
     if (searchTerm.trim()) {
@@ -33,7 +32,7 @@ const Sidebar = () => {
     const chatId = `chat-${Date.now()}`;
     const newChat = {
       id: chatId,
-      name: `Novo Chat ${chatId.substring(5, 10)}`,
+      name: `New Chat ${chatId.substring(5, 10)}`,
       lastMessage: null,
       unreadCount: 0,
     };
@@ -59,7 +58,7 @@ const Sidebar = () => {
         <Search size={20} className="search-icon" />
         <input
           type="text"
-          placeholder="Buscar conversas..."
+          placeholder="Search conversations..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           className="search-input"
@@ -68,7 +67,7 @@ const Sidebar = () => {
 
       <button onClick={handleNewChat} className="btn-new-chat">
         <Plus size={20} />
-        Nova Conversa
+        New Chat
       </button>
 
       <ChatList

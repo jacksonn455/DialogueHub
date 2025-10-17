@@ -1,0 +1,54 @@
+.typing-indicator-container {
+  display: flex;
+  margin-bottom: 8px;
+  animation: fadeIn 0.3s ease;
+}
+
+.typing-indicator {
+  background: white;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border-bottom-left-radius: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.typing-dots {
+  display: flex;
+  gap: 3px;
+  padding: 4px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  background: #667781;
+  border-radius: 50%;
+  animation: typing 1.4s infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typing {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-8px);
+    opacity: 1;
+  }
+}
+
+.typing-text {
+  font-size: 13px;
+  color: #667781;
+  font-style: italic;
+}

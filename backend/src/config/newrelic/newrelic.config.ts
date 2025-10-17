@@ -1,4 +1,3 @@
-// src/config/newrelic/newrelic.config.ts
 import { Injectable } from '@nestjs/common';
 
 @Injectable()

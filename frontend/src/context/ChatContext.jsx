@@ -1,6 +1,6 @@
-import React, { createContext, useState, useEffect } from 'react';
-import { useSocket } from '../hooks/useSocket';
-import { messagesApi } from '../api/messagesApi';
+import React, { createContext, useState, useEffect } from "react";
+import { useSocket } from "../hooks/useSocket";
+import { messagesApi } from "../api/messagesApi";
 
 export const ChatContext = createContext();
 
@@ -12,15 +12,13 @@ export const ChatProvider = ({ children }) => {
   const [typingUsers, setTypingUsers] = useState({});
   const [loading, setLoading] = useState(false);
 
-  // Carregar chats
   const loadChats = async () => {
     try {
       setLoading(true);
       const data = await messagesApi.getAllMessages();
-      
-      // Agrupar mensagens por chat
+
       const chatGroups = data.reduce((acc, msg) => {
-        const chatId = msg.chat || 'general';
+        const chatId = msg.chat || "general";
         if (!acc[chatId]) {
           acc[chatId] = {
             id: chatId,
@@ -40,47 +38,44 @@ export const ChatProvider = ({ children }) => {
 
       setChats(chatList);
     } catch (error) {
-      console.error('Error loading chats:', error);
+      console.error("Error loading chats:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Carregar mensagens do chat
   const loadMessages = async (chatId, page = 1) => {
     try {
       setLoading(true);
       const data = await messagesApi.getMessagesByChat(chatId, page, 50);
-      
+
       if (page === 1) {
         setMessages(data);
       } else {
         setMessages((prev) => [...data, ...prev]);
       }
     } catch (error) {
-      console.error('Error loading messages:', error);
+      console.error("Error loading messages:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  // Entrar no chat
   const joinChat = (chat) => {
     if (activeChat && socket) {
-      socket.emit('leaveChat', { chatId: activeChat.id });
+      socket.emit("leaveChat", { chatId: activeChat.id });
     }
 
     setActiveChat(chat);
-    
+
     if (socket) {
-      socket.emit('joinChat', { chatId: chat.id });
+      socket.emit("joinChat", { chatId: chat.id });
     }
-    
+
     loadMessages(chat.id);
   };
 
-  // Enviar mensagem
-  const sendMessage = (content, type = 'text') => {
+  const sendMessage = (content, type = "text") => {
     if (!socket || !activeChat) return;
 
     const messageData = {
@@ -89,64 +84,57 @@ export const ChatProvider = ({ children }) => {
       type,
     };
 
-    socket.emit('sendMessage', messageData);
+    socket.emit("sendMessage", messageData);
   };
 
-  // Editar mensagem
   const editMessage = (messageId, content) => {
     if (!socket) return;
 
-    socket.emit('editMessage', {
+    socket.emit("editMessage", {
       id: messageId,
       updateDto: { content },
     });
   };
 
-  // Deletar mensagem
   const deleteMessage = (messageId) => {
     if (!socket) return;
 
-    socket.emit('deleteMessage', { id: messageId });
+    socket.emit("deleteMessage", { id: messageId });
   };
 
-  // Indicar digitação
   const sendTyping = (isTyping) => {
     if (!socket || !activeChat) return;
 
-    socket.emit('typing', {
+    socket.emit("typing", {
       chatId: activeChat.id,
       isTyping,
     });
   };
 
-  // Socket listeners
   useEffect(() => {
     if (!socket) return;
 
-    socket.on('newMessage', (message) => {
+    socket.on("newMessage", (message) => {
       setMessages((prev) => [...prev, message]);
-      
-      // Atualizar última mensagem do chat
+
       setChats((prev) =>
         prev.map((chat) =>
-          chat.id === message.chat
-            ? { ...chat, lastMessage: message }
-            : chat
+          chat.id === message.chat ? { ...chat, lastMessage: message } : chat
         )
       );
     });
 
-    socket.on('messageEdited', (message) => {
+    socket.on("messageEdited", (message) => {
       setMessages((prev) =>
         prev.map((m) => (m._id === message._id ? message : m))
       );
     });
 
-    socket.on('messageDeleted', ({ id }) => {
+    socket.on("messageDeleted", ({ id }) => {
       setMessages((prev) => prev.filter((m) => m._id !== id));
     });
 
-    socket.on('userTyping', ({ userId, isTyping }) => {
+    socket.on("userTyping", ({ userId, isTyping }) => {
       setTypingUsers((prev) => ({
         ...prev,
         [userId]: isTyping,
@@ -160,10 +148,10 @@ export const ChatProvider = ({ children }) => {
     });
 
     return () => {
-      socket.off('newMessage');
-      socket.off('messageEdited');
-      socket.off('messageDeleted');
-      socket.off('userTyping');
+      socket.off("newMessage");
+      socket.off("messageEdited");
+      socket.off("messageDeleted");
+      socket.off("userTyping");
     };
   }, [socket]);
 

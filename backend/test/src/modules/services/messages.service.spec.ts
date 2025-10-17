@@ -9,7 +9,6 @@ import { RedisService } from '../../../../src/config/redis/redis.service';
 import { CreateMessageDto } from '../../../../src/modules/messages/dtos/create-message.dto';
 import { UpdateMessageDto } from '../../../../src/modules/messages/dtos/update-message.dto';
 
-// Mock do New Relic antes de importar qualquer coisa
 jest.mock('newrelic', () => ({
   startSegment: jest.fn((name, record, handler) => handler()),
   recordMetric: jest.fn(),
@@ -203,7 +202,11 @@ describe('MessagesService', () => {
         content: 'Updated message',
       };
 
-      const updatedMessage = { ...mockMessage, content: 'Updated message', edited: true };
+      const updatedMessage = {
+        ...mockMessage,
+        content: 'Updated message',
+        edited: true,
+      };
 
       mockMessageModel.findById.mockResolvedValue(mockMessage);
       mockMessageModel.exec.mockResolvedValue(updatedMessage);
@@ -241,7 +244,9 @@ describe('MessagesService', () => {
       const result = await service.remove(messageId);
 
       expect(result).toEqual({ deleted: true });
-      expect(mockMessageModel.findByIdAndDelete).toHaveBeenCalledWith(messageId);
+      expect(mockMessageModel.findByIdAndDelete).toHaveBeenCalledWith(
+        messageId,
+      );
       expect(mockRabbitMQService.sendMessageDeleted).toHaveBeenCalled();
     });
 

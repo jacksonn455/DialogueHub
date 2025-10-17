@@ -1,10 +1,10 @@
-import { io } from 'socket.io-client';
+import io from 'socket.io-client';
 
 const WS_URL = process.env.REACT_APP_WS_URL || 'http://localhost:3000';
 
-let socket = null;
+let socket: any = null;
 
-export const initializeSocket = (userId) => {
+export const initializeSocket = (userId: any) => {
   if (socket) {
     socket.disconnect();
   }

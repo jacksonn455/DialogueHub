@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useChat } from '../../hooks/useChat';
-import { Edit2, Trash2, Reply, Check, CheckCheck } from 'lucide-react';
+import { Edit2, Trash2, Check, CheckCheck } from 'lucide-react';
 import { formatMessageTime } from '../../utils/formatDate';
 import './MessageItem.css';
 

@@ -20,8 +20,8 @@ const Login = () => {
       <div className="login-card">
         <div className="login-header">
           <MessageSquare size={48} className="login-icon" />
-          <h1>Chat App</h1>
-          <p>Entre para começar a conversar</p>
+          <h1>Dialog Hub</h1>
+          <p>Sign in to start chatting</p>
         </div>
         
         <form onSubmit={handleSubmit} className="login-form">
@@ -38,11 +38,11 @@ const Login = () => {
           </div>
           
           <div className="form-group">
-            <label htmlFor="userName">Nome</label>
+            <label htmlFor="userName">Name</label>
             <input
               id="userName"
               type="text"
-              placeholder="Digite seu nome"
+              placeholder="Enter your name"
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               required
@@ -50,7 +50,7 @@ const Login = () => {
           </div>
           
           <button type="submit" className="btn-login">
-            Entrar
+            Enter
           </button>
         </form>
       </div>
