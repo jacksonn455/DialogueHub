@@ -5,6 +5,8 @@ Detailed documentation for each part of the project is located in their respecti
 - **[Backend README](./backend/README.md)** - Contains information about:
 - **[Frontend README](./frontend/README.md)** - Contains information about:
 
+[video](https://youtu.be/)  - Contains all information about project
+
 ![Login Interface](https://github.com/jacksonn455/DialogueHub/blob/main/images/login.png)
 
 ![Chat Interface](https://github.com/jacksonn455/DialogueHub/blob/main/images/message.png)
