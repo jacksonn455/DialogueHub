@@ -30,7 +30,7 @@ const Login = () => {
             <input
               id="userId"
               type="text"
-              placeholder="Digite seu ID"
+              placeholder="Enter your ID"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
               required
