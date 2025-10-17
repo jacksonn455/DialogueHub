@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { useChat } from '../../hooks/useChat';
-import { Edit2, Trash2, Check, CheckCheck } from 'lucide-react';
-import { formatMessageTime } from '../../utils/formatDate';
-import './MessageItem.css';
+import React, { useState } from "react";
+import { useChat } from "../../hooks/useChat";
+import { Edit2, Trash2, Check, CheckCheck } from "lucide-react";
+import { formatMessageTime } from "../../utils/formatDate";
+import "./MessageItem.css";
 
 const MessageItem = ({ message, isOwn }) => {
   const { editMessage, deleteMessage } = useChat();
@@ -18,14 +18,14 @@ const MessageItem = ({ message, isOwn }) => {
   };
 
   const handleDelete = () => {
-    if (window.confirm('Deseja realmente deletar esta mensagem?')) {
+    if (window.confirm("Are you sure you want to delete this message?")) {
       deleteMessage(message._id);
     }
   };
 
   return (
     <div
-      className={`message-item ${isOwn ? 'own' : 'other'}`}
+      className={`message-item ${isOwn ? "own" : "other"}`}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
     >
@@ -35,7 +35,7 @@ const MessageItem = ({ message, isOwn }) => {
             type="text"
             value={editContent}
             onChange={(e) => setEditContent(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleEdit()}
+            onKeyPress={(e) => e.key === "Enter" && handleEdit()}
             autoFocus
           />
           <div className="edit-actions">

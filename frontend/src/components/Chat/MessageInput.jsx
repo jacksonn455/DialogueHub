@@ -66,7 +66,7 @@ const MessageInput = () => {
           value={message}
           onChange={handleInputChange}
           onKeyPress={handleKeyPress}
-          placeholder="Digite uma mensagem..."
+          placeholder="Type a message..."
           rows={1}
           className="message-input"
         />

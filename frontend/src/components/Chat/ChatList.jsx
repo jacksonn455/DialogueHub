@@ -37,7 +37,7 @@ const ChatList = ({ chats, activeChat, onSelectChat }) => {
                 <p className="last-message">
                   {chat.lastMessage?.content
                     ? truncateText(chat.lastMessage.content, 40)
-                    : "Nenhuma mensagem"}
+                    : "No mensages"}
                 </p>
                 {chat.unreadCount > 0 && (
                   <span className="unread-badge">{chat.unreadCount}</span>
