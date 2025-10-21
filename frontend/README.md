@@ -3,6 +3,7 @@
 A modern, responsive React-based frontend for DialogueHub, featuring real-time messaging capabilities powered by WebSocket technology.
 
 ![Login Interface](https://github.com/jacksonn455/DialogueHub/blob/main/images/login.png)
+![Chat](https://github.com/jacksonn455/DialogueHub/blob/main/images/front.png)
 ![Chat Interface](https://github.com/jacksonn455/DialogueHub/blob/main/images/message.png)
 
 ## 🚀 Features
