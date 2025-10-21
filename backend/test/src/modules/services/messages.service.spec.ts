@@ -1,7 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { MessagesService } from '../../../../src/modules/messages/messages.service';
 import { Message } from '../../../../src/modules/messages/schemas/message.schema';
 import { RabbitMQService } from '../../../../src/config/rabbitmq/rabbitmq.service';
@@ -34,6 +34,9 @@ describe('MessagesService', () => {
     updatedAt: new Date(),
     toString: () => '507f1f77bcf86cd799439011',
   };
+
+  const validObjectId = '507f1f77bcf86cd799439011';
+  const invalidObjectId = 'nonexistent';
 
   beforeEach(async () => {
     mockMessageModel = jest.fn().mockImplementation((dto) => ({
@@ -172,7 +175,7 @@ describe('MessagesService', () => {
 
   describe('findOne', () => {
     it('should return a single message by id', async () => {
-      const messageId = '507f1f77bcf86cd799439011';
+      const messageId = validObjectId;
 
       mockCacheManager.get.mockResolvedValue(null);
       mockMessageModel.exec.mockResolvedValue(mockMessage);
@@ -183,8 +186,16 @@ describe('MessagesService', () => {
       expect(mockMessageModel.findById).toHaveBeenCalledWith(messageId);
     });
 
+    it('should throw BadRequestException for invalid message id', async () => {
+      const messageId = invalidObjectId;
+
+      await expect(service.findOne(messageId)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
     it('should throw NotFoundException if message not found', async () => {
-      const messageId = 'nonexistent';
+      const messageId = validObjectId;
 
       mockCacheManager.get.mockResolvedValue(null);
       mockMessageModel.exec.mockResolvedValue(null);
@@ -197,7 +208,7 @@ describe('MessagesService', () => {
 
   describe('update', () => {
     it('should update a message', async () => {
-      const messageId = '507f1f77bcf86cd799439011';
+      const messageId = validObjectId;
       const updateDto: UpdateMessageDto = {
         content: 'Updated message',
       };
@@ -219,8 +230,19 @@ describe('MessagesService', () => {
       expect(mockRabbitMQService.sendMessageUpdated).toHaveBeenCalled();
     });
 
+    it('should throw BadRequestException for invalid message id', async () => {
+      const messageId = invalidObjectId;
+      const updateDto: UpdateMessageDto = {
+        content: 'Updated message',
+      };
+
+      await expect(service.update(messageId, updateDto)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
     it('should throw NotFoundException if message to update not found', async () => {
-      const messageId = 'nonexistent';
+      const messageId = validObjectId;
       const updateDto: UpdateMessageDto = {
         content: 'Updated message',
       };
@@ -235,7 +257,7 @@ describe('MessagesService', () => {
 
   describe('remove', () => {
     it('should delete a message', async () => {
-      const messageId = '507f1f77bcf86cd799439011';
+      const messageId = validObjectId;
 
       mockMessageModel.findById.mockResolvedValue(mockMessage);
       mockMessageModel.findByIdAndDelete.mockResolvedValue(mockMessage);
@@ -250,8 +272,16 @@ describe('MessagesService', () => {
       expect(mockRabbitMQService.sendMessageDeleted).toHaveBeenCalled();
     });
 
+    it('should throw BadRequestException for invalid message id', async () => {
+      const messageId = invalidObjectId;
+
+      await expect(service.remove(messageId)).rejects.toThrow(
+        BadRequestException,
+      );
+    });
+
     it('should throw NotFoundException if message to delete not found', async () => {
-      const messageId = 'nonexistent';
+      const messageId = validObjectId;
 
       mockMessageModel.findById.mockResolvedValue(null);
 
@@ -263,7 +293,7 @@ describe('MessagesService', () => {
 
   describe('findReplies', () => {
     it('should return replies for a message', async () => {
-      const messageId = '507f1f77bcf86cd799439011';
+      const messageId = validObjectId;
       const replies = [mockMessage];
 
       mockCacheManager.get.mockResolvedValue(null);
