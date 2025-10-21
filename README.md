@@ -9,6 +9,8 @@ Detailed documentation for each part of the project is located in their respecti
 
 ![Login Interface](https://github.com/jacksonn455/DialogueHub/blob/main/images/login.png)
 
+![Chat](https://github.com/jacksonn455/DialogueHub/blob/main/images/front.png)
+
 ![Chat Interface](https://github.com/jacksonn455/DialogueHub/blob/main/images/message.png)
 
 ## Quick Start
