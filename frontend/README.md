@@ -7,31 +7,37 @@ A modern, responsive React-based frontend for DialogueHub, featuring real-time m
 
 ## 🚀 Features
 
-- **Real-time Messaging**: Instant message delivery using WebSocket connections
-- **Typing Indicators**: See when other users are typing
-- **Online Status**: Real-time user presence tracking
-- **Message Management**: Edit, delete, and read receipts
-- **Responsive Design**: Optimized for desktop and mobile devices
-- **Modern UI**: Clean, intuitive interface with smooth animations
+- **🔐 Authentication System** - JWT-based login with secure token storage
+- **💬 Real-time Messaging** - Instant message delivery with WebSocket
+- **⌨️ Typing Indicators** - Visual feedback when users are typing
+- **🟢 Online Status** - Real-time user presence tracking
+- **✏️ Message Management** - Edit, delete with optimistic updates
+- **📱 Responsive Design** - Mobile-first approach
+- **🎨 Modern UI** - Clean interface with Lucide React icons
+- **⚡ Performance** - Optimized re-renders with React.memo
+- **🔒 Security** - Input validation and XSS protection
 
 ## 🛠 Tech Stack
 
-- **Frontend Framework**: React 18+ with TypeScript
-- **State Management**: React Context API / Redux Toolkit
-- **Real-time Communication**: Socket.io Client
-- **Styling**: CSS-in-JS (Styled-components) or Tailwind CSS
-- **Routing**: React Router v6
-- **HTTP Client**: Axios for REST API calls
-- **Build Tool**: Vite
-- **Package Manager**: npm or yarn
+**Frontend Framework**: React 18.2.0 with Hooks
+**Language**: TypeScript for type safety
+**Real-time**: Socket.io Client 4.7.0
+**Styling**: CSS Modules
+**State Management**: React Context API + useReducer
+**Routing**: React Router DOM 6.8.0
+**HTTP Client**: Axios for API calls
+**Icons**: Lucide React
+**Build Tool**: Vite 5.0
+**Package Manager**: npm
 
 ## 📦 Installation
 
 To get a local copy up and running, follow these simple steps.
 
 ### Prerequisites
-
-Ensure you have Node.js and npm (or yarn) installed on your system.
+- Node.js 18+ 
+- npm 9+ or yarn 1.22+
+- Backend server running on port 3000
 
 ### Clone the repository
 

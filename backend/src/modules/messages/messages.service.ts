@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  Inject,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
@@ -20,6 +25,17 @@ export class MessagesService {
     private readonly rabbitMQService: RabbitMQService,
     private readonly redisService: RedisService,
   ) {}
+
+  private validateObjectId(id: string, fieldName: string = 'ID'): void {
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException(`Invalid ${fieldName}: ${id}`);
+    }
+  }
+
+  private toObjectId(id: string, fieldName: string = 'ID'): Types.ObjectId {
+    this.validateObjectId(id, fieldName);
+    return new Types.ObjectId(id);
+  }
 
   async create(createMessageDto: CreateMessageDto): Promise<Message> {
     return newrelic.startSegment('MessagesService.create', true, async () => {
@@ -109,11 +125,23 @@ export class MessagesService {
     });
   }
 
+  private isValidChatId(id: string): boolean {
+    return Types.ObjectId.isValid(id) || id.startsWith('chat-');
+  }
+
+  private validateChatId(id: string): void {
+    if (!this.isValidChatId(id)) {
+      throw new BadRequestException(`Invalid Chat ID: ${id}`);
+    }
+  }
+
   async findByChat(chatId: string): Promise<Message[]> {
     return newrelic.startSegment(
       'MessagesService.findByChat',
       true,
       async () => {
+        this.validateChatId(chatId);
+
         const cacheKey = `messages_chat_${chatId}`;
 
         newrelic.addCustomAttributes({
@@ -159,8 +187,155 @@ export class MessagesService {
     );
   }
 
+  async findWithPagination(
+    chatId: string,
+    page: number = 1,
+    limit: number = 50,
+  ): Promise<{
+    messages: Message[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
+    return newrelic.startSegment(
+      'MessagesService.findWithPagination',
+      true,
+      async () => {
+        this.validateChatId(chatId);
+
+        const cacheKey = `messages_chat_${chatId}_page_${page}_limit_${limit}`;
+
+        newrelic.addCustomAttributes({
+          'chat.id': chatId,
+          'pagination.page': page,
+          'pagination.limit': limit,
+          'cache.key': cacheKey,
+        });
+
+        const cached = await this.cacheManager.get<any>(cacheKey);
+        if (cached) {
+          newrelic.recordMetric('Custom/Cache/Hits', 1);
+          newrelic.recordMetric('Custom/Pagination/CacheHits', 1);
+          return cached;
+        }
+
+        newrelic.recordMetric('Custom/Cache/Misses', 1);
+        newrelic.recordMetric('Custom/Pagination/CacheMisses', 1);
+
+        const skip = (page - 1) * limit;
+
+        const [messages, total] = await Promise.all([
+          this.messageModel
+            .find({ chat: chatId })
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .exec(),
+          this.messageModel.countDocuments({
+            chat: chatId,
+          }),
+        ]);
+
+        const result = {
+          messages,
+          total,
+          page,
+          totalPages: Math.ceil(total / limit),
+        };
+
+        await this.cacheManager.set(cacheKey, result, 60);
+
+        newrelic.recordMetric('Custom/Pagination/Requests', 1);
+        newrelic.recordMetric(`Custom/Chats/${chatId}/PaginationRequests`, 1);
+        newrelic.addCustomAttributes({
+          'pagination.totalPages': result.totalPages,
+          'pagination.totalItems': total,
+          'pagination.returnedItems': messages.length,
+        });
+
+        return result;
+      },
+    );
+  }
+
+  async getChatStats(chatId: string): Promise<{
+    totalMessages: number;
+    lastActivity?: string;
+    activeUsers: string[];
+  }> {
+    return newrelic.startSegment(
+      'MessagesService.getChatStats',
+      true,
+      async () => {
+        this.validateChatId(chatId);
+
+        const cacheKey = `chat:${chatId}:stats`;
+
+        newrelic.addCustomAttributes({
+          'chat.id': chatId,
+          'cache.key': cacheKey,
+        });
+
+        const cached = await this.cacheManager.get<any>(cacheKey);
+        if (cached) {
+          newrelic.recordMetric('Custom/Cache/Hits', 1);
+          return cached;
+        }
+
+        newrelic.recordMetric('Custom/Cache/Misses', 1);
+
+        const [totalMessages, lastMessage] = await Promise.all([
+          this.messageModel.countDocuments({
+            chat: chatId,
+          }),
+          this.messageModel
+            .findOne({ chat: chatId })
+            .sort({ createdAt: -1 })
+            .select('createdAt')
+            .exec(),
+        ]);
+
+        const activeUsers = await this.messageModel.distinct('sender', {
+          chat: chatId,
+          createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
+        });
+
+        const activeUsersString = activeUsers.map((userId) =>
+          userId.toString(),
+        );
+
+        const stats = {
+          totalMessages,
+          activeUsers: activeUsersString,
+        };
+
+        await this.cacheManager.set(cacheKey, stats, 300);
+
+        newrelic.recordMetric(
+          `Custom/Chats/${chatId}/TotalMessages`,
+          totalMessages,
+        );
+        newrelic.recordMetric(
+          `Custom/Chats/${chatId}/ActiveUsers`,
+          activeUsersString.length,
+        );
+        newrelic.recordCustomEvent('ChatStats', {
+          chatId: chatId,
+          totalMessages: totalMessages,
+          activeUsersCount: activeUsersString.length,
+          hasRecentActivity: !!lastMessage,
+          timestamp: new Date().toISOString(),
+        });
+
+        return stats;
+      },
+    );
+  }
+
   async findOne(id: string): Promise<Message> {
     return newrelic.startSegment('MessagesService.findOne', true, async () => {
+      this.validateObjectId(id, 'Message ID');
+
       const cacheKey = `message_${id}`;
 
       newrelic.addCustomAttributes({
@@ -201,6 +376,8 @@ export class MessagesService {
   async update(id: string, updateDto: UpdateMessageDto): Promise<Message> {
     return newrelic.startSegment('MessagesService.update', true, async () => {
       try {
+        this.validateObjectId(id, 'Message ID');
+
         const message = await this.messageModel.findById(id);
         if (!message) {
           throw new NotFoundException(`Message with ID ${id} not found`);
@@ -257,6 +434,8 @@ export class MessagesService {
   async remove(id: string): Promise<{ deleted: boolean }> {
     return newrelic.startSegment('MessagesService.remove', true, async () => {
       try {
+        this.validateObjectId(id, 'Message ID');
+
         const message = await this.messageModel.findById(id);
         if (!message) {
           throw new NotFoundException(`Message with ID ${id} not found`);
@@ -302,6 +481,8 @@ export class MessagesService {
       'MessagesService.findReplies',
       true,
       async () => {
+        this.validateObjectId(messageId, 'Message ID');
+
         const cacheKey = `replies_${messageId}`;
 
         newrelic.addCustomAttributes({
@@ -401,6 +582,8 @@ export class MessagesService {
       'MessagesService.getUserMessageCount',
       true,
       async () => {
+        this.validateObjectId(userId, 'User ID');
+
         const cacheKey = `user:${userId}:message_count`;
 
         newrelic.addCustomAttributes({
@@ -417,7 +600,7 @@ export class MessagesService {
         newrelic.recordMetric('Custom/Cache/Misses', 1);
 
         const count = await this.messageModel.countDocuments({
-          sender: new Types.ObjectId(userId),
+          sender: this.toObjectId(userId, 'User ID'),
         });
 
         await this.cacheManager.set(cacheKey, count, 600);
@@ -430,147 +613,6 @@ export class MessagesService {
         });
 
         return count;
-      },
-    );
-  }
-
-  async getChatStats(chatId: string): Promise<{
-    totalMessages: number;
-    lastActivity?: string;
-    activeUsers: string[];
-  }> {
-    return newrelic.startSegment(
-      'MessagesService.getChatStats',
-      true,
-      async () => {
-        const cacheKey = `chat:${chatId}:stats`;
-
-        newrelic.addCustomAttributes({
-          'chat.id': chatId,
-          'cache.key': cacheKey,
-        });
-
-        const cached = await this.cacheManager.get<any>(cacheKey);
-        if (cached) {
-          newrelic.recordMetric('Custom/Cache/Hits', 1);
-          return cached;
-        }
-
-        newrelic.recordMetric('Custom/Cache/Misses', 1);
-
-        const [totalMessages, lastMessage] = await Promise.all([
-          this.messageModel.countDocuments({
-            chat: new Types.ObjectId(chatId),
-          }),
-          this.messageModel
-            .findOne({ chat: new Types.ObjectId(chatId) })
-            .sort({ createdAt: -1 })
-            .select('createdAt')
-            .exec(),
-        ]);
-
-        const activeUsers = await this.messageModel.distinct('sender', {
-          chat: new Types.ObjectId(chatId),
-          createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-        });
-
-        const activeUsersString = activeUsers.map((userId) =>
-          userId.toString(),
-        );
-
-        const stats = {
-          totalMessages,
-          activeUsers: activeUsersString,
-        };
-
-        await this.cacheManager.set(cacheKey, stats, 300);
-
-        newrelic.recordMetric(
-          `Custom/Chats/${chatId}/TotalMessages`,
-          totalMessages,
-        );
-        newrelic.recordMetric(
-          `Custom/Chats/${chatId}/ActiveUsers`,
-          activeUsersString.length,
-        );
-        newrelic.recordCustomEvent('ChatStats', {
-          chatId: chatId,
-          totalMessages: totalMessages,
-          activeUsersCount: activeUsersString.length,
-          hasRecentActivity: !!lastMessage,
-          timestamp: new Date().toISOString(),
-        });
-
-        return stats;
-      },
-    );
-  }
-
-  async findWithPagination(
-    chatId: string,
-    page: number = 1,
-    limit: number = 50,
-  ): Promise<{
-    messages: Message[];
-    total: number;
-    page: number;
-    totalPages: number;
-  }> {
-    return newrelic.startSegment(
-      'MessagesService.findWithPagination',
-      true,
-      async () => {
-        const cacheKey = `messages_chat_${chatId}_page_${page}_limit_${limit}`;
-
-        newrelic.addCustomAttributes({
-          'chat.id': chatId,
-          'pagination.page': page,
-          'pagination.limit': limit,
-          'cache.key': cacheKey,
-        });
-
-        const cached = await this.cacheManager.get<any>(cacheKey);
-        if (cached) {
-          newrelic.recordMetric('Custom/Cache/Hits', 1);
-          newrelic.recordMetric('Custom/Pagination/CacheHits', 1);
-          return cached;
-        }
-
-        newrelic.recordMetric('Custom/Cache/Misses', 1);
-        newrelic.recordMetric('Custom/Pagination/CacheMisses', 1);
-
-        const skip = (page - 1) * limit;
-
-        const [messages, total] = await Promise.all([
-          this.messageModel
-            .find({ chat: new Types.ObjectId(chatId) })
-            .sort({ createdAt: -1 })
-            .skip(skip)
-            .limit(limit)
-            .exec(),
-          this.messageModel.countDocuments({
-            chat: new Types.ObjectId(chatId),
-          }),
-        ]);
-
-        const result = {
-          messages,
-          total,
-          page,
-          totalPages: Math.ceil(total / limit),
-        };
-
-        await this.cacheManager.set(cacheKey, result, 60);
-
-        newrelic.recordMetric('Custom/Pagination/Requests', 1);
-        newrelic.recordMetric(`Custom/Chats/${chatId}/PaginationRequests`, 1);
-        newrelic.addCustomAttributes({
-          'pagination.totalPages': result.totalPages,
-          'pagination.totalItems': total,
-          'pagination.returnedItems': messages.length,
-        });
-
-        return result;
       },
     );
   }

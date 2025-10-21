@@ -1,30 +1,38 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsOptional, IsString, IsMongoId } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional, IsEnum } from 'class-validator';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Types } from 'mongoose';
 
 export class CreateMessageDto {
-  @ApiProperty({ example: 'Hello world!', description: 'Message content' })
-  @IsNotEmpty()
+  @ApiProperty({ description: 'Message content' })
   @IsString()
+  @IsNotEmpty()
   content: string;
 
-  @ApiProperty({
-    example: '507f1f77bcf86cd799439011',
-    description: 'Sender ID',
-  })
-  @IsNotEmpty()
-  @IsMongoId()
-  sender: string;
+  @ApiProperty({ description: 'Message type', default: 'text' })
+  @IsString()
+  @IsOptional()
+  @IsEnum(['text', 'image', 'file', 'video', 'audio'])
+  type?: string;
 
-  @ApiProperty({ example: '664f8d7a9e6f8a3d4c9b1a2b', description: 'Chat ID' })
+  @ApiProperty({ description: 'User ID who is sending the message' })
+  @IsString()
   @IsNotEmpty()
-  @IsMongoId()
+  sender: string | Types.ObjectId;
+
+  @ApiProperty({ 
+    description: 'Chat ID - can be custom string or MongoDB ObjectId',
+    example: 'chat-1761084352930' 
+  })
+  @IsString()
+  @IsNotEmpty()
   chat: string;
 
-  @ApiProperty({
-    example: '664f8d7a9e6f8a3d4c9b1a2c',
-    description: 'Optional ID of the message being replied to',
-  })
+  @ApiPropertyOptional({ description: 'Parent message ID for replies' })
+  @IsString()
   @IsOptional()
-  @IsMongoId()
-  replyTo?: string;
+  replyTo?: string | Types.ObjectId;
+
+  @ApiPropertyOptional({ description: 'Additional metadata' })
+  @IsOptional()
+  metadata?: Record<string, any>;
 }

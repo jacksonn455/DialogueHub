@@ -1,0 +1,47 @@
+/* UserSwitcher.css */
+.user-switcher {
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 8px;
+  margin: 10px;
+  border: 1px solid #ddd;
+}
+
+.current-user {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.user-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.user-btn {
+  padding: 6px 12px;
+  border: 1px solid #007bff;
+  background: white;
+  color: #007bff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+}
+
+.user-btn:hover:not(:disabled) {
+  background: #007bff;
+  color: white;
+}
+
+.user-btn.active {
+  background: #007bff;
+  color: white;
+  cursor: not-allowed;
+}
+
+.user-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

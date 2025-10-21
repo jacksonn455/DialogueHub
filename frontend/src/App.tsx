@@ -5,6 +5,7 @@ import Login from './components/Auth/Login';
 import ChatWindow from './components/Chat/ChatWindow';
 import Sidebar from './components/Sidebar/Sidebar';
 import { useAuth } from './hooks/useAuth';
+import UserSwitcher from './components/Common/UserSwitcher';
 import './App.css';
 
 function AppContent() {
@@ -15,9 +16,13 @@ function AppContent() {
   }
 
   return (
-    <div className="app-container">
-      <Sidebar />
-      <ChatWindow />
+    <div className="app">
+      <UserSwitcher />
+      
+      <div className="app-container">
+        <Sidebar />
+        <ChatWindow />
+      </div>
     </div>
   );
 }
